@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:state_management_abstraction/state_management/state_management.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,111 +12,202 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'State Management Abstraction',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      themeMode: ThemeMode.system,
+      home: const UserView(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+// Generic State Pattern
+sealed class AppState<T> {
+  const AppState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+final class InitialState<T> extends AppState<T> {
+  const InitialState();
+}
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+final class LoadingState<T> extends AppState<T> {
+  const LoadingState();
+}
+
+final class SuccessState<T> extends AppState<T> {
+  final T data;
+
+  const SuccessState({required this.data});
+}
+
+final class ErrorState<T> extends AppState<T> {
+  final String message;
+
+  const ErrorState({required this.message});
+}
+
+// Result Pattern
+sealed class Result<S, E extends Exception> {
+  const Result();
+
+  T fold<T>({
+    required T Function(S value) onSuccess,
+    required T Function(E error) onError,
+  }) {
+    switch (this) {
+      case Success(value: final v):
+        return onSuccess(v);
+      case Error(error: final e):
+        return onError(e);
+    }
+  }
+}
+
+final class Success<S, E extends Exception> extends Result<S, E> {
+  final S value;
+
+  const Success({required this.value});
+}
+
+final class Error<S, E extends Exception> extends Result<S, E> {
+  final E error;
+
+  const Error({required this.error});
+}
+
+// Model
+class UserModel {
+  final String? name;
+
+  UserModel({this.name});
+}
+
+// Repository
+typedef UserResult = Result<UserModel, Exception>;
+
+abstract interface class UserRepository {
+  Future<UserResult> findOneUser();
+}
+
+class UserRepositoryImpl implements UserRepository {
+  @override
+  Future<UserResult> findOneUser() async {
+    try {
+      await Future.delayed(Duration(seconds: 4));
+      return Success(value: UserModel(name: 'John Doe'));
+    } catch (error) {
+      return Error(error: Exception('An error occurred.'));
+    }
+  }
+}
+
+// ViewModel
+typedef _ViewModel = StateManagement<UserState>;
+
+typedef UserState = AppState<UserModel>;
+
+abstract interface class UserViewModel extends _ViewModel {
+  UserViewModel(super.initialState);
+
+  Future<void> getUserData();
+}
+
+class UserViewModelImpl extends _ViewModel implements UserViewModel {
+  final UserRepository userRepository;
+
+  UserViewModelImpl({required this.userRepository}) : super(InitialState());
+
+  @override
+  Future<void> getUserData() async {
+    _emit(LoadingState());
+
+    final result = await userRepository.findOneUser();
+
+    final userState = result.fold<UserState>(
+      onSuccess: (value) => SuccessState(data: value),
+      onError: (error) => ErrorState(message: '$error'),
+    );
+
+    _emit(userState);
+  }
+
+  void _emit(UserState newState) {
+    emitState(newState);
+    debugPrint('User state: $state');
+  }
+}
+
+// View
+class UserView extends StatefulWidget {
+  const UserView({super.key});
+
+  @override
+  State<UserView> createState() => _UserViewState();
+}
+
+class _UserViewState extends State<UserView> {
+  late final UserRepository userRepository;
+  late final UserViewModel userViewModel;
+
+  @override
+  void initState() {
+    super.initState();
+    userRepository = UserRepositoryImpl();
+    userViewModel = UserViewModelImpl(userRepository: userRepository);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _getUserData();
     });
   }
 
   @override
+  void dispose() {
+    userViewModel.dispose();
+    super.dispose();
+  }
+
+  Future<void> _getUserData() async {
+    await userViewModel.getUserData();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        title: const Text('User Info'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined),
+            onPressed: () async {
+              await _getUserData();
+            },
+          ),
+        ],
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await _getUserData();
+          },
+          child: StateConsumerWidget<UserViewModel, UserState>(
+            viewModel: userViewModel,
+            listener: (context, state) {
+              if (state is SuccessState) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Carregado com sucesso!!')),
+                );
+              }
+            },
+            builder: (context, userState) {
+              return switch (userState) {
+                InitialState() => const Text('Aguardando ação...'),
+                LoadingState() => const CircularProgressIndicator(),
+                SuccessState(data: final user) => Text('Usuário: ${user.name}'),
+                ErrorState(message: final message) => Text('Erro: $message'),
+              };
+            },
+          ),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
