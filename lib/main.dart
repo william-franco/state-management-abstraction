@@ -200,10 +200,10 @@ class _UserViewState extends State<UserView> {
             },
             builder: (context, userState) {
               return switch (userState) {
-                InitialState() => const Text('Aguardando ação...'),
+                InitialState() => const SizedBox.shrink(),
                 LoadingState() => const CircularProgressIndicator(),
-                SuccessState(data: final user) => Text('Usuário: ${user.name}'),
-                ErrorState(message: final message) => Text('Erro: $message'),
+                SuccessState(data: final user) => Text('User: ${user.name}'),
+                ErrorState(message: final message) => Text('Error: $message'),
               };
             },
           ),
