@@ -3,6 +3,41 @@
 Under construction.
 
 
+## Project Structure
+
+The project is structured in a modular way, where each new functionality should be a new module containing its particularities, and things common to the entire project should be in the `common` module.
+
+
+## Folder architecture
+
+```
+src/
+    ├── common/
+    │   ├── constants/
+    │   ├── dependency_injectors/
+    │   ├── enums/
+    │   ├── extensions/
+    │   ├── patterns/
+    │   ├── routes/
+    │   ├── services/
+    │   ├── state_management/
+    │   └── widgets/
+    └── features/
+        ├── feature_one/
+        │   ├── models/
+        │   ├── repositories/
+        │   ├── routes/
+        │   ├── view_models/
+        │   └── views/
+        └── feature_two/
+            ├── models/
+            ├── repositories/
+            ├── routes/
+            ├── view_models/
+            └── views/
+```
+
+
 ## Coverage
 
 flutter pub run build_runner build --delete-conflicting-outputs
