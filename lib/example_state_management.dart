@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:state_management_abstraction/state_management/state_management.dart';
+import 'package:state_management_abstraction/common/state_management/state_management.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +22,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// Generic State Pattern
 sealed class AppState<T> {
   const AppState();
 }
@@ -47,7 +46,6 @@ final class ErrorState<T> extends AppState<T> {
   const ErrorState({required this.message});
 }
 
-// Result Pattern
 sealed class Result<S, E extends Exception> {
   const Result();
 
@@ -76,14 +74,12 @@ final class Error<S, E extends Exception> extends Result<S, E> {
   const Error({required this.error});
 }
 
-// Model
 class UserModel {
   final String? name;
 
   UserModel({this.name});
 }
 
-// Repository
 typedef UserResult = Result<UserModel, Exception>;
 
 abstract interface class UserRepository {
@@ -102,10 +98,9 @@ class UserRepositoryImpl implements UserRepository {
   }
 }
 
-// ViewModel
-typedef _ViewModel = StateManagement<UserState>;
-
 typedef UserState = AppState<UserModel>;
+
+typedef _ViewModel = StateManagement<UserState>;
 
 abstract interface class UserViewModel extends _ViewModel {
   UserViewModel(super.initialState);
@@ -138,7 +133,6 @@ class UserViewModelImpl extends _ViewModel implements UserViewModel {
   }
 }
 
-// View
 class UserView extends StatefulWidget {
   const UserView({super.key});
 
@@ -178,8 +172,8 @@ class _UserViewState extends State<UserView> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_outlined),
-            onPressed: () async {
-              await _getUserData();
+            onPressed: () {
+              _getUserData();
             },
           ),
         ],
@@ -189,15 +183,8 @@ class _UserViewState extends State<UserView> {
           onRefresh: () async {
             await _getUserData();
           },
-          child: StateConsumerWidget<UserViewModel, UserState>(
+          child: StateBuilderWidget<UserViewModel, UserState>(
             viewModel: userViewModel,
-            listener: (context, state) {
-              if (state is SuccessState) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Carregado com sucesso!!')),
-                );
-              }
-            },
             builder: (context, userState) {
               return switch (userState) {
                 InitialState() => const SizedBox.shrink(),
