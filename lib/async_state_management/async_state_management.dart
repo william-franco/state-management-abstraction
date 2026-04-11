@@ -23,7 +23,6 @@ class StateLoading<T> extends StateValue<T> {
 
 class StateError<T> extends StateValue<T> {
   final Object errorValue;
-
   const StateError(this.errorValue);
 
   @override
@@ -36,7 +35,6 @@ class StateError<T> extends StateValue<T> {
 
 class StateData<T> extends StateValue<T> {
   final T dataValue;
-
   const StateData(this.dataValue);
 
   @override
@@ -48,9 +46,15 @@ class StateData<T> extends StateValue<T> {
 }
 
 abstract class AsyncStateManagement<T> extends ChangeNotifier {
-  StateValue<T> _state;
+  late StateValue<T> _state;
 
-  AsyncStateManagement(StateValue<T> initialState) : _state = initialState;
+  AsyncStateManagement() {
+    _state = build();
+  }
+
+  /// Define o estado inicial da subclasse.
+  @protected
+  StateValue<T> build();
 
   StateValue<T> get state => _state;
 

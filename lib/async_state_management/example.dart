@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:state_management_abstraction/common/state_management/state_management.dart';
+import 'package:state_management_abstraction/async_state_management/async_state_management.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'State Management Abstraction',
+      title: 'Async State Management Abstraction',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light(useMaterial3: true),
       darkTheme: ThemeData.dark(useMaterial3: true),
@@ -20,30 +20,6 @@ class MyApp extends StatelessWidget {
       home: const UserView(),
     );
   }
-}
-
-sealed class AppState<T> {
-  const AppState();
-}
-
-final class InitialState<T> extends AppState<T> {
-  const InitialState();
-}
-
-final class LoadingState<T> extends AppState<T> {
-  const LoadingState();
-}
-
-final class SuccessState<T> extends AppState<T> {
-  final T data;
-
-  const SuccessState({required this.data});
-}
-
-final class ErrorState<T> extends AppState<T> {
-  final String message;
-
-  const ErrorState({required this.message});
 }
 
 sealed class Result<S, E extends Exception> {
@@ -98,37 +74,35 @@ class UserRepositoryImpl implements UserRepository {
   }
 }
 
-typedef UserState = AppState<UserModel>;
-
-typedef _ViewModel = StateManagement<UserState>;
+typedef _ViewModel = AsyncStateManagement<UserModel>;
 
 abstract interface class UserViewModel extends _ViewModel {
-  UserViewModel(super.initialState);
-
   Future<void> getUserData();
 }
 
 class UserViewModelImpl extends _ViewModel implements UserViewModel {
   final UserRepository userRepository;
 
-  UserViewModelImpl({required this.userRepository}) : super(InitialState());
+  UserViewModelImpl({required this.userRepository});
+
+  @override
+  StateValue<UserModel> build() => const StateLoading();
 
   @override
   Future<void> getUserData() async {
-    _emit(LoadingState());
+    setLoading();
 
     final result = await userRepository.findOneUser();
 
-    final userState = result.fold<UserState>(
-      onSuccess: (value) => SuccessState(data: value),
-      onError: (error) => ErrorState(message: '$error'),
+    result.fold(
+      onSuccess: (value) => setData(value),
+      onError: (error) => setError('$error'),
     );
 
-    _emit(userState);
+    _debug();
   }
 
-  void _emit(UserState newState) {
-    emitState(newState);
+  void _debug() {
     debugPrint('User state: $state');
   }
 }
@@ -183,15 +157,14 @@ class _UserViewState extends State<UserView> {
           onRefresh: () async {
             await _getUserData();
           },
-          child: StateBuilderWidget<UserViewModel, UserState>(
+          child: AsyncStateBuilderWidget<UserViewModel, UserModel>(
             viewModel: userViewModel,
             builder: (context, userState) {
-              return switch (userState) {
-                InitialState() => const SizedBox.shrink(),
-                LoadingState() => const CircularProgressIndicator(),
-                SuccessState(data: final user) => Text('User: ${user.name}'),
-                ErrorState(message: final message) => Text('Error: $message'),
-              };
+              return userState.when(
+                loading: () => const CircularProgressIndicator(),
+                data: (data) => Text('User: ${data.name}'),
+                error: (error) => Text('Error: $error'),
+              );
             },
           ),
         ),

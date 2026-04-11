@@ -1,17 +1,26 @@
 import 'package:flutter/material.dart';
 
 abstract class StateManagement<T> extends ChangeNotifier {
-  T _state;
+  late T _state;
 
-  StateManagement(T initialState) : _state = initialState;
+  StateManagement() {
+    _state = build();
+  }
 
+  /// Define o estado inicial da subclasse.
+  /// Espelha o contrato do Notifier.build() do Riverpod.
+  @protected
+  T build();
+
+  /// Getter público — leitura somente.
   T get state => _state;
 
+  /// Única forma de emitir um novo estado.
+  /// Compara referências antes de notificar.
   @protected
   void emitState(T newState) {
     if (identical(_state, newState)) return;
     _state = newState;
-    debugPrint('StateManagement<$T> -> $newState');
     notifyListeners();
   }
 
