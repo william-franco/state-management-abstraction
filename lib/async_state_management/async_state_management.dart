@@ -52,7 +52,6 @@ abstract class AsyncStateManagement<T> extends ChangeNotifier {
     _state = build();
   }
 
-  /// Define o estado inicial da subclasse.
   @protected
   StateValue<T> build();
 

@@ -7,16 +7,11 @@ abstract class StateManagement<T> extends ChangeNotifier {
     _state = build();
   }
 
-  /// Define o estado inicial da subclasse.
-  /// Espelha o contrato do Notifier.build() do Riverpod.
   @protected
   T build();
 
-  /// Getter público — leitura somente.
   T get state => _state;
 
-  /// Única forma de emitir um novo estado.
-  /// Compara referências antes de notificar.
   @protected
   void emitState(T newState) {
     if (identical(_state, newState)) return;
