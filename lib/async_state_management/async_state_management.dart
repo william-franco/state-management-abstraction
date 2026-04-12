@@ -61,24 +61,22 @@ abstract class AsyncStateManagement<T> extends ChangeNotifier {
   void emitState(StateValue<T> newState) {
     if (identical(_state, newState)) return;
     _state = newState;
-    debugPrint('AsyncStateManagement<$T> -> $newState');
     notifyListeners();
   }
 
-  @override
-  String toString() => 'AsyncStateManagement<$T>(state: $_state)';
-
   @protected
-  void setLoading() => emitState(const StateLoading());
+  void setLoading() => emitState(StateLoading<T>());
 
   @protected
   void setError(Object error) => emitState(StateError<T>(error));
 
   @protected
   void setData(T data) => emitState(StateData<T>(data));
+
+  @override
+  String toString() => 'AsyncStateManagement<$T>(state: $_state)';
 }
 
-@protected
 typedef AsyncStateBuilder<S> =
     Widget Function(BuildContext context, StateValue<S> state);
 
@@ -102,6 +100,113 @@ class AsyncStateBuilderWidget<V extends AsyncStateManagement<S>, S>
       child: child,
       builder: (context, child) {
         return builder(context, viewModel.state);
+      },
+    );
+  }
+}
+
+typedef AsyncStateListener<S> =
+    void Function(BuildContext context, StateValue<S> state);
+
+class AsyncStateListenerWidget<V extends AsyncStateManagement<S>, S>
+    extends StatefulWidget {
+  final V viewModel;
+  final AsyncStateListener<S> listener;
+  final Widget child;
+
+  const AsyncStateListenerWidget({
+    super.key,
+    required this.viewModel,
+    required this.listener,
+    required this.child,
+  });
+
+  @override
+  State<AsyncStateListenerWidget<V, S>> createState() =>
+      _AsyncStateListenerWidgetState<V, S>();
+}
+
+class _AsyncStateListenerWidgetState<V extends AsyncStateManagement<S>, S>
+    extends State<AsyncStateListenerWidget<V, S>> {
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.addListener(_onStateChanged);
+  }
+
+  @override
+  void didUpdateWidget(AsyncStateListenerWidget<V, S> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewModel != widget.viewModel) {
+      oldWidget.viewModel.removeListener(_onStateChanged);
+      widget.viewModel.addListener(_onStateChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.removeListener(_onStateChanged);
+    super.dispose();
+  }
+
+  void _onStateChanged() => widget.listener(context, widget.viewModel.state);
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class AsyncStateConsumerWidget<V extends AsyncStateManagement<S>, S>
+    extends StatefulWidget {
+  final V viewModel;
+  final AsyncStateListener<S> listener;
+  final AsyncStateBuilder<S> builder;
+  final Widget? child;
+
+  const AsyncStateConsumerWidget({
+    super.key,
+    required this.viewModel,
+    required this.listener,
+    required this.builder,
+    this.child,
+  });
+
+  @override
+  State<AsyncStateConsumerWidget<V, S>> createState() =>
+      _AsyncStateConsumerWidgetState<V, S>();
+}
+
+class _AsyncStateConsumerWidgetState<V extends AsyncStateManagement<S>, S>
+    extends State<AsyncStateConsumerWidget<V, S>> {
+  @override
+  void initState() {
+    super.initState();
+    widget.viewModel.addListener(_onStateChanged);
+  }
+
+  @override
+  void didUpdateWidget(AsyncStateConsumerWidget<V, S> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.viewModel != widget.viewModel) {
+      oldWidget.viewModel.removeListener(_onStateChanged);
+      widget.viewModel.addListener(_onStateChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.viewModel.removeListener(_onStateChanged);
+    super.dispose();
+  }
+
+  void _onStateChanged() => widget.listener(context, widget.viewModel.state);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.viewModel,
+      child: widget.child,
+      builder: (context, child) {
+        return widget.builder(context, widget.viewModel.state);
       },
     );
   }
