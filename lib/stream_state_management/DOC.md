@@ -35,7 +35,7 @@ abstract class StreamStateManagement<T>
 | Nome                    | Descrição                                                                                                         |
 |-------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `build()`               | Define o estado inicial da subclasse. Obrigatório — chamado automaticamente no construtor.                        |
-| `emitState(T newState)` | Atualiza o estado e adiciona o novo valor ao stream. Ignorado se idêntico ao atual ou se o controller estiver fechado. |
+| `emitState(T newState)` | Atualiza o estado e adiciona o novo valor ao stream. Ignorado se igual (`==`) ao atual ou se o controller estiver fechado. |
 | `dispose()`             | Fecha o `StreamController`. Deve ser chamado no `dispose` da View.                                               |
 
 ### Uso

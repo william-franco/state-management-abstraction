@@ -20,7 +20,7 @@ abstract class StreamStateManagement<T> {
 
   @protected
   void emitState(T newState) {
-    if (identical(_state, newState)) return;
+    if (_state == newState) return;
     if (_controller.isClosed) return;
     _state = newState;
     _controller.add(_state);

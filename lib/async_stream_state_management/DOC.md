@@ -66,7 +66,7 @@ abstract class AsyncStreamStateManagement<T>
 | Nome                           | Descrição                                                                                                              |
 |--------------------------------|------------------------------------------------------------------------------------------------------------------------|
 | `build()`                      | Define o estado inicial da subclasse. Obrigatório — chamado automaticamente no construtor.                             |
-| `emitState(StateValue<T>)`     | Atualiza o estado e adiciona o novo valor ao stream. Ignorado se idêntico ao atual ou se o controller estiver fechado. |
+| `emitState(StateValue<T>)`     | Atualiza o estado e adiciona o novo valor ao stream. Ignorado se igual (`==`) ao atual ou se o controller estiver fechado. |
 | `setLoading()`                 | Atalho para `emitState(StateLoading())`.                                                                               |
 | `setError(Object error)`       | Atalho para `emitState(StateError(error))`.                                                                            |
 | `setData(T data)`              | Atalho para `emitState(StateData(data))`.                                                                              |

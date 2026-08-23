@@ -65,7 +65,7 @@ abstract class AsyncStreamStateManagement<T> {
 
   @protected
   void emitState(StateValue<T> newState) {
-    if (identical(_state, newState)) return;
+    if (_state == newState) return;
     if (_controller.isClosed) return;
     _state = newState;
     _controller.add(_state);

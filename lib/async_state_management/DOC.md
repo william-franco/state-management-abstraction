@@ -61,7 +61,7 @@ abstract class AsyncStateManagement<T> extends ChangeNotifier
 | Nome                           | Descrição                                                                                         |
 |--------------------------------|---------------------------------------------------------------------------------------------------|
 | `build()`                      | Define o estado inicial da subclasse. Obrigatório — chamado automaticamente no construtor.        |
-| `emitState(StateValue<T>)`     | Atualiza o estado e notifica os listeners. Ignorado se o novo estado for idêntico ao atual.       |
+| `emitState(StateValue<T>)`     | Atualiza o estado e notifica os listeners. Ignorado se o novo estado for igual (`==`) ao atual.       |
 | `setLoading()`                 | Atalho para `emitState(StateLoading())`.                                                          |
 | `setError(Object error)`       | Atalho para `emitState(StateError(error))`.                                                       |
 | `setData(T data)`              | Atalho para `emitState(StateData(data))`.                                                         |

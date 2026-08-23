@@ -59,7 +59,7 @@ abstract class AsyncStateManagement<T> extends ChangeNotifier {
 
   @protected
   void emitState(StateValue<T> newState) {
-    if (identical(_state, newState)) return;
+    if (_state == newState) return;
     _state = newState;
     notifyListeners();
   }

@@ -33,7 +33,7 @@ abstract class StateManagement<T> extends ChangeNotifier
 | Nome                    | Descrição                                                                                   |
 |-------------------------|---------------------------------------------------------------------------------------------|
 | `build()`               | Define o estado inicial da subclasse. Obrigatório — chamado automaticamente no construtor.  |
-| `emitState(T newState)` | Atualiza o estado e notifica os listeners. Ignorado se o novo estado for idêntico ao atual. |
+| `emitState(T newState)` | Atualiza o estado e notifica os listeners. Ignorado se o novo estado for igual (`==`) ao atual. |
 
 ### Uso
 
