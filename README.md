@@ -1,14 +1,25 @@
 # State Management Abstraction
 
-Under construction.
+State management abstraction layer example.
 
+## Stack
 
-## Project Structure
+| Technology | Version |
+|------------|---------|
+| Dart SDK | ^3.13.2 |
+| cupertino_icons | ^1.0.8 |
+| flutter_lints | ^6.0.0 |
+| Android Gradle Plugin | 9.1.0 |
+| Kotlin | 2.4.0 |
+| compileSdk / targetSdk | 36 |
+| minSdk | 29 |
+| JVM | 25 |
+| iOS Deployment Target | 15.0 |
+| Swift | 5.0 |
+
+## Architecture
 
 The project is structured in a modular way, where each new functionality should be a new module containing its particularities, and things common to the entire project should be in the `common` module.
-
-
-## Folder architecture
 
 ```
 src/
@@ -37,7 +48,6 @@ src/
             └── views/
 ```
 
-
 ## Coverage
 
 flutter pub run build_runner build --delete-conflicting-outputs
@@ -47,7 +57,6 @@ flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
 
 open coverage/html/index.html
-
 
 ## ScreenShots
 
@@ -59,8 +68,7 @@ open coverage/html/index.html
 |----------|----------|----------|
 | ![App Screenshot](assets/screenshots/screen-4.png) | ![App Screenshot](assets/screenshots/screen-5.png) | ![App Screenshot](assets/screenshots/screen-6.png) |
 
-
-## Examples of commits
+## Commits
 
 ```
 git add . && git commit -m ":rocket: Initial commit." && git push
@@ -79,7 +87,6 @@ git add . && git commit -m ":test_tube: Added test functionality xyz." && git pu
 git add . && git commit -m ":construction_worker: Building in progress." && git push
 git add . && git commit -m ":construction_worker: Added CI build system." && git push
 ```
-
 
 ## License
 
