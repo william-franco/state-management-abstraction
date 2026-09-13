@@ -1,12 +1,32 @@
 # State Management Abstraction
 
-State management abstraction layer example.
+Shows how to hide concrete state libraries behind a shared abstraction interface.
+
+UI and features depend on the abstraction; implementations can swap without view changes.
+
+Includes sample features with repositories and pluggable state holders.
+
+Helps when standardizing state APIs across multiple apps or teams.
+
+## Structure
+
+```mermaid
+flowchart TB
+  ExampleApp --> StateExample
+  ExampleApp --> StreamExample
+  ExampleApp --> AsyncExample
+  ExampleApp --> AsyncStreamExample
+  UserView --> StateAbstraction
+  StateAbstraction --> UserViewModel
+  UserViewModel --> UserRepository
+  UserRepository --> UserRepositoryImpl
+```
 
 ## Stack
 
 | Technology | Version |
 |------------|---------|
-| Dart SDK | ^3.13.2 |
+| Dart SDK | ^3.13.3 |
 | cupertino_icons | ^1.0.8 |
 | flutter_lints | ^6.0.0 |
 | Android Gradle Plugin | 9.1.0 |
