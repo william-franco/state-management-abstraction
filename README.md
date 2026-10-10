@@ -26,7 +26,7 @@ flowchart TB
 
 | Technology | Version |
 |------------|---------|
-| Dart SDK | ^3.13.4 |
+| Dart SDK | ^3.13.5 |
 | cupertino_icons | ^1.0.8 |
 | flutter_lints | ^6.0.0 |
 | Android Gradle Plugin | 9.1.0 |
