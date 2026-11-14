@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:state_management_abstraction/stream_state_management/stream_state_management.dart';
 
 void main() {
